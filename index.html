@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Razorpay Payment Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #2d2d2d;
+        }
+        .product {
+            margin-bottom: 1rem;
+        }
+        .price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        #payButton {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #payButton:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Razorpay Payment Example</h1>
+        <div class="product">
+            <h2>Sample Product</h2>
+            <p class="price">₹999</p>
+        </div>
+        <button id="payButton">Pay Now</button>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        document.getElementById('payButton').onclick = function(e) {
+            e.preventDefault();
+
+            // Replace with your actual backend endpoint
+            const createOrderUrl = 'http://localhost:4000/api/v1/checkouts?type=CART';
+
+            // Make a POST request to your backend to create an order
+            fetch(createOrderUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'cf-ipcountry': 'IN',
+                    'Authorization': 'Bearer '
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const options = {
+                    key: '', // Replace with your actual Razorpay Key ID
+                    amount: data.data.orderAmount,
+                    currency: data.data.orderCurrency,
+                    name: 'Your Company Name',
+                    description: 'Sample Product Purchase',
+                    order_id: data.data.orderId,
+                    handler: function (response) {
+                        alert('Payment Successful! Payment ID: ' + response.razorpay_payment_id);
+                        // Handle the successful payment here (e.g., update your backend)
+                    },
+                    prefill: {
+                        name: 'Customer Name',
+                        email: 'customer@example.com',
+                        contact: '9999999999'
+                    },
+                    theme: {
+                        color: '#4CAF50'
+                    }
+                };
+                const rzp = new Razorpay(options);
+                rzp.open();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was an error processing your payment. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>
